@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { DiagramNode } from '../types';
+import { DiagramNode, NodeInfo } from '../types';
 import './NodeComponent.css';
 
 interface NodeComponentProps {
@@ -7,8 +7,8 @@ interface NodeComponentProps {
   isSelected: boolean;
   onUpdate: (id: string, updates: Partial<DiagramNode>) => void;
   onDelete: (id: string) => void;
-  onClick: (id: string, e: React.MouseEvent) => void;
-  onStartConnection: (id: string) => void;
+  onClick: (nodeInfo: NodeInfo, e: React.MouseEvent) => void;
+  onStartConnection: (nodeInfo: NodeInfo) => void;
 }
 
 const NodeComponent: React.FC<NodeComponentProps> = ({
@@ -25,6 +25,7 @@ const NodeComponent: React.FC<NodeComponentProps> = ({
   const [editLabel, setEditLabel] = useState(node.label);
   const nodeRef = useRef<HTMLDivElement>(null);
   const animationFrameRef = useRef<number | null>(null);
+  const newNodeInfo: NodeInfo = {id: node.id, type: node.type}
 
   const handleMouseDown = (e: React.MouseEvent) => {
     if (e.button === 0) { // Left click
@@ -35,7 +36,7 @@ const NodeComponent: React.FC<NodeComponentProps> = ({
       });
     } else if (e.button === 2) { // Right click
       e.preventDefault();
-      onStartConnection(node.id);
+      onStartConnection(newNodeInfo);
     }
   };
 
@@ -104,8 +105,10 @@ const NodeComponent: React.FC<NodeComponentProps> = ({
 
   const handleContextMenu = (e: React.MouseEvent) => {
     e.preventDefault();
-    onStartConnection(node.id);
+    onStartConnection(newNodeInfo);
   };
+
+  
 
   return (
     <div
@@ -120,7 +123,7 @@ const NodeComponent: React.FC<NodeComponentProps> = ({
       }}
       onMouseDown={handleMouseDown}
       onDoubleClick={handleDoubleClick}
-      onClick={(e) => onClick(node.id, e)}
+      onClick={(e) => onClick(newNodeInfo, e)}
       onContextMenu={handleContextMenu}
     >
       <div className="node-header" style={{ backgroundColor: node.color }}>

@@ -17,8 +17,8 @@ const ConnectionComponent: React.FC<ConnectionComponentProps> = ({
   const [isAnimating, setIsAnimating] = useState(false);
   const animationFrameRef = useRef<number | null>(null);
 
-  const fromNode = nodes.find(n => n.id === connection.from);
-  const toNode = nodes.find(n => n.id === connection.to);
+  const fromNode = nodes.find(n => n.id === connection.from.id);
+  const toNode = nodes.find(n => n.id === connection.to.id);
 
   // Memoize expensive calculations to prevent unnecessary recalculations
   const connectionData = useMemo(() => {

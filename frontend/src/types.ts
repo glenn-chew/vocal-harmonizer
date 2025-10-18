@@ -10,10 +10,15 @@ export interface DiagramNode {
   icon?: string;
 }
 
+export interface NodeInfo {
+  id: string; 
+  type: string;
+}
+
 export interface DiagramConnection {
   id: string;
-  from: string;
-  to: string;
+  from: NodeInfo;
+  to: NodeInfo;
   label?: string;
   type?: 'solid' | 'dashed' | 'dotted';
   color?: string;

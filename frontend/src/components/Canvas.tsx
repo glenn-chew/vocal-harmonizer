@@ -1,7 +1,8 @@
 import React, { useState, useRef, useCallback } from 'react';
 import { useDrop } from 'react-dnd';
-import { DiagramNode, DiagramConnection, DragItem } from '../types';
+import { DiagramNode, DiagramConnection, DragItem, NodeInfo } from '../types';
 import NodeComponent from './NodeComponent';
+import ResizableNodeComponent from './ResizableNodeComponent';
 import ConnectionComponent from './ConnectionComponent';
 import './Canvas.css';
 
@@ -29,7 +30,7 @@ const Canvas: React.FC<CanvasProps> = ({
   onSelectNode,
 }) => {
   const [isConnecting, setIsConnecting] = useState(false);
-  const [connectionStart, setConnectionStart] = useState<string | null>(null);
+  const [connectionStart, setConnectionStart] = useState<NodeInfo | null>(null);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const canvasRef = useRef<HTMLDivElement>(null);
 
@@ -70,16 +71,16 @@ const Canvas: React.FC<CanvasProps> = ({
     }
   }, [isConnecting, connectionStart]);
 
-  const handleNodeClick = useCallback((nodeId: string, e: React.MouseEvent) => {
+  const handleNodeClick = useCallback((nodeInfo: NodeInfo, e: React.MouseEvent) => {
     e.stopPropagation();
     
     if (isConnecting) {
-      if (connectionStart && connectionStart !== nodeId) {
+      if (connectionStart && connectionStart.id !== nodeInfo.id) {
         // Create connection
         const newConnection: DiagramConnection = {
           id: `conn-${Date.now()}`,
           from: connectionStart,
-          to: nodeId,
+          to: nodeInfo,
           type: 'solid',
           color: '#6b7280',
         };
@@ -88,7 +89,7 @@ const Canvas: React.FC<CanvasProps> = ({
       setIsConnecting(false);
       setConnectionStart(null);
     } else {
-      onSelectNode(nodeId);
+      onSelectNode(nodeInfo.id);
     }
   }, [isConnecting, connectionStart, onAddConnection, onSelectNode]);
 
@@ -113,15 +114,21 @@ const Canvas: React.FC<CanvasProps> = ({
     }
   }, [selectedNode, onDeleteNode, onSelectNode]);
 
-  const startConnection = useCallback((nodeId: string) => {
+  const startConnection = useCallback((nodeInfo: NodeInfo) => {
     setIsConnecting(true);
-    setConnectionStart(nodeId);
+    setConnectionStart(nodeInfo);
+  }, []);
+
+  // Helper function to determine if a node should be resizable
+  const isResizableNode = useCallback((node: DiagramNode) => {
+    // VPC nodes should be resizable
+    return node.type.includes('vpc') || node.type.includes('vnet');
   }, []);
 
   const getConnectionPreview = () => {
     if (!isConnecting || !connectionStart) return null;
 
-    const startNode = nodes.find(n => n.id === connectionStart);
+    const startNode = nodes.find(n => n.id === connectionStart.id);
     if (!startNode) return null;
 
     const startX = startNode.x + startNode.width / 2;
@@ -172,17 +179,33 @@ const Canvas: React.FC<CanvasProps> = ({
           />
         ))}
         
-        {nodes.map(node => (
-          <NodeComponent
-            key={node.id}
-            node={node}
-            isSelected={selectedNode === node.id}
-            onUpdate={onUpdateNode}
-            onDelete={onDeleteNode}
-            onClick={handleNodeClick}
-            onStartConnection={startConnection}
-          />
-        ))}
+        {nodes.map(node => {
+          if (isResizableNode(node)) {
+            return (
+              <ResizableNodeComponent
+                key={node.id}
+                node={node}
+                isSelected={selectedNode === node.id}
+                onUpdate={onUpdateNode}
+                onDelete={onDeleteNode}
+                onClick={handleNodeClick}
+                onStartConnection={startConnection}
+              />
+            );
+          } else {
+            return (
+              <NodeComponent
+                key={node.id}
+                node={node}
+                isSelected={selectedNode === node.id}
+                onUpdate={onUpdateNode}
+                onDelete={onDeleteNode}
+                onClick={handleNodeClick}
+                onStartConnection={startConnection}
+              />
+            );
+          }
+        })}
         
         {getConnectionPreview()}
       </div>
