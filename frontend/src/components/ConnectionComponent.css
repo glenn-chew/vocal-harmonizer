@@ -1,0 +1,31 @@
+.connection {
+  pointer-events: none;
+}
+
+.connection-line {
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.connection-line:hover {
+  stroke-width: 3;
+}
+
+.connection.hovered .connection-line {
+  stroke-width: 3;
+}
+
+.connection-endpoint {
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.connection-endpoint:hover {
+  r: 6;
+}
+
+.connection-label {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  font-weight: 500;
+  pointer-events: none;
+}
