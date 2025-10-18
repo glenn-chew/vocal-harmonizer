@@ -26,9 +26,9 @@ const ConnectionComponent: React.FC<ConnectionComponentProps> = ({
       return null;
     }
 
-    const fromX = fromNode.x + fromNode.width / 2;
+    const fromX = fromNode.x + fromNode.width;
     const fromY = fromNode.y + fromNode.height / 2;
-    const toX = toNode.x + toNode.width / 2;
+    const toX = toNode.x;
     const toY = toNode.y + toNode.height / 2;
 
     // Calculate control points for curved line
