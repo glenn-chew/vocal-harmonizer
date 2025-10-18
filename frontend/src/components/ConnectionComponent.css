@@ -7,6 +7,10 @@
   cursor: pointer;
 }
 
+.connection.animating .connection-line {
+  transition: none !important; /* Disable transitions during animation for smooth movement */
+}
+
 .connection-line:hover {
   stroke-width: 3;
 }
@@ -18,6 +22,10 @@
 .connection-endpoint {
   cursor: pointer;
   transition: all 0.2s ease;
+}
+
+.connection.animating .connection-endpoint {
+  transition: none !important; /* Disable transitions during animation for smooth movement */
 }
 
 .connection-endpoint:hover {
