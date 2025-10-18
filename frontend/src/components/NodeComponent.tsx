@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { DiagramNode } from '../types';
 import './NodeComponent.css';
 
@@ -24,6 +24,7 @@ const NodeComponent: React.FC<NodeComponentProps> = ({
   const [isEditing, setIsEditing] = useState(false);
   const [editLabel, setEditLabel] = useState(node.label);
   const nodeRef = useRef<HTMLDivElement>(null);
+  const animationFrameRef = useRef<number | null>(null);
 
   const handleMouseDown = (e: React.MouseEvent) => {
     if (e.button === 0) { // Left click
@@ -38,17 +39,47 @@ const NodeComponent: React.FC<NodeComponentProps> = ({
     }
   };
 
-  const handleMouseMove = (e: React.MouseEvent) => {
+  const handleMouseMove = (e: MouseEvent) => {
     if (isDragging) {
-      const newX = e.clientX - dragStart.x;
-      const newY = e.clientY - dragStart.y;
-      onUpdate(node.id, { x: newX, y: newY });
+      // Cancel any pending animation frame
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+      
+      // Use requestAnimationFrame for smooth updates
+      animationFrameRef.current = requestAnimationFrame(() => {
+        const newX = e.clientX - dragStart.x;
+        const newY = e.clientY - dragStart.y;
+        onUpdate(node.id, { x: newX, y: newY });
+      });
     }
   };
 
   const handleMouseUp = () => {
     setIsDragging(false);
+    // Cancel any pending animation frame
+    if (animationFrameRef.current) {
+      cancelAnimationFrame(animationFrameRef.current);
+      animationFrameRef.current = null;
+    }
   };
+
+  useEffect(() => {
+    if (isDragging) {
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+      
+      return () => {
+        document.removeEventListener('mousemove', handleMouseMove);
+        document.removeEventListener('mouseup', handleMouseUp);
+        // Clean up any pending animation frame
+        if (animationFrameRef.current) {
+          cancelAnimationFrame(animationFrameRef.current);
+          animationFrameRef.current = null;
+        }
+      };
+    }
+  }, [isDragging, dragStart, node.id, onUpdate]);
 
   const handleDoubleClick = () => {
     setIsEditing(true);
@@ -88,8 +119,6 @@ const NodeComponent: React.FC<NodeComponentProps> = ({
         borderColor: node.color,
       }}
       onMouseDown={handleMouseDown}
-      onMouseMove={handleMouseMove}
-      onMouseUp={handleMouseUp}
       onDoubleClick={handleDoubleClick}
       onClick={(e) => onClick(node.id, e)}
       onContextMenu={handleContextMenu}

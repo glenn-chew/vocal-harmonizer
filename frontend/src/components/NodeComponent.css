@@ -25,6 +25,7 @@
   z-index: 100;
   transform: rotate(2deg);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  transition: none !important; /* Disable transitions during dragging for smooth movement */
 }
 
 .node-header {
